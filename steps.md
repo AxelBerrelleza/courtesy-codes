@@ -8,6 +8,7 @@
 8. docker compose stop
 9. docker compose up --build --wait
 10. docker compose exec php bin/console doctrine:database:create
+11. docker compose exec php composer require symfony/validator symfony/uid
 
 - Extra dev packs
 	- symfony/test-pack
