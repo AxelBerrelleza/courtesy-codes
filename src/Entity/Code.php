@@ -5,8 +5,10 @@ namespace App\Entity;
 use App\Repository\CodeRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CodeRepository::class)]
+#[Groups('code:detail')]
 class Code
 {
     #[ORM\Id]
