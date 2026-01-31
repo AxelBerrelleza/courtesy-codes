@@ -4,18 +4,19 @@ namespace App\Tests\Api;
 
 use App\Dto\CodeDto;
 use App\Factory\EventFactory;
+use App\Tests\BaseApiTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Zenstruck\Foundry\Test\Factories;
 
 /** @todo handle other scenarios */
-class CodeControllerTest extends WebTestCase
+class CodeControllerTest extends BaseApiTestCase
 {
     use Factories;
 
     public function testHappyPath(): void
     {
-        $client = static::createClient();
+        $client = static::createAuthenticatedClient();
         $endpoint = '/events/%d/courtesy-codes';
         $event = EventFactory::randomOrCreate();
 
