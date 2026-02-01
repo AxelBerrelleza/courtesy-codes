@@ -3,9 +3,12 @@
 namespace App\Tests\Api;
 
 use App\Dto\PostRedeemDto;
+use App\Enum\CodeStatus;
 use App\Factory\CodeFactory;
+use App\Factory\UserFactory;
 use App\Tests\BaseApiTestCase;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class CourtesyCodeRedeemTest extends BaseApiTestCase
 {
@@ -53,5 +56,25 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
         $this->assertStringContainsString('guestName', $response['detail']);
         $this->assertStringContainsString('guestEmail', $response['detail']);
         $this->assertStringContainsString('guestType', $response['detail']);
+    }
+
+    public function testFailsWithInvalidCode(): void
+    {
+        $client = static::createAuthenticatedClient();
+        $courtesyCode = CodeFactory::createOne(['status' => CodeStatus::CANCELLED]);
+        $redeemDto = new PostRedeemDto();
+        $redeemDto->userId = UserFactory::random()->getId();
+        $normalizer = $this->getContainer()->get(NormalizerInterface::class);
+        $redeemData = $normalizer->normalize($redeemDto, format: 'array');
+        $client->request(
+            'POST',
+            sprintf($this->endpoint, $courtesyCode->getUuid()),
+            content: json_encode($redeemData),
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        // dump($response['detail']);
+        $this->arrayHasKey('detail', $response);
+        $this->assertStringContainsString('The code is not available.', $response['detail']);
     }
 }
