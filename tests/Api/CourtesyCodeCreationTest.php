@@ -10,7 +10,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Zenstruck\Foundry\Test\Factories;
 
 /** @todo handle other scenarios */
-class CodeControllerTest extends BaseApiTestCase
+class CourtesyCodeCreationTest extends BaseApiTestCase
 {
     use Factories;
 
