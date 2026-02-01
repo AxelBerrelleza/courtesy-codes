@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\CodeStatus;
 use App\Repository\CodeRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -37,6 +38,9 @@ class Code
     #[ORM\ManyToOne(inversedBy: 'codes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Event $event = null;
+
+    #[ORM\Column(enumType: CodeStatus::class)]
+    private ?CodeStatus $status = null;
 
     public function getId(): ?int
     {
@@ -123,6 +127,18 @@ class Code
     public function setEvent(?Event $event): static
     {
         $this->event = $event;
+
+        return $this;
+    }
+
+    public function getStatus(): ?CodeStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(CodeStatus $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }

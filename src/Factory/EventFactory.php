@@ -3,6 +3,7 @@
 namespace App\Factory;
 
 use App\Entity\Event;
+use App\Enum\EventStatus;
 use DateTime;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -35,6 +36,7 @@ final class EventFactory extends PersistentObjectFactory
         return [
             'name' => self::faker()->text(255),
             'date' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('now', '+7 days')),
+            'status' => EventStatus::ACTIVE,
         ];
     }
 

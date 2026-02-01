@@ -3,6 +3,7 @@
 namespace App\Factory;
 
 use App\Entity\Code;
+use App\Enum\CodeStatus;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -12,12 +13,8 @@ final class CodeFactory extends PersistentObjectFactory
 {
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
-     *
-     * @todo inject services if required
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     #[\Override]
     public static function class(): string
@@ -27,20 +24,19 @@ final class CodeFactory extends PersistentObjectFactory
 
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#model-factories
-     *
-     * @todo add your default values here
      */
     #[\Override]
     protected function defaults(): array|callable
     {
         return [
-            'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
             'event' => EventFactory::new(),
-            'expiresAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+            'uuid' => self::faker()->uuid(),
             'quantity' => self::faker()->randomNumber(),
             'type' => self::faker()->text(32),
-            'uuid' => self::faker()->uuid(),
             'zoneId' => self::faker()->text(255),
+            'status' => CodeStatus::ACTIVE,
+            'expiresAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+            'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
         ];
     }
 

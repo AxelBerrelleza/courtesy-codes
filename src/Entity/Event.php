@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\EventStatus;
 use App\Repository\EventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -29,6 +30,9 @@ class Event
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $date = null;
+
+    #[ORM\Column(enumType: EventStatus::class)]
+    private ?EventStatus $status = null;
 
     public function __construct()
     {
@@ -90,6 +94,18 @@ class Event
     public function setDate(?\DateTime $date): static
     {
         $this->date = $date;
+
+        return $this;
+    }
+
+    public function getStatus(): ?EventStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(EventStatus $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }

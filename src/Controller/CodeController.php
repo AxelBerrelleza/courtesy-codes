@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Dto\CodeDto;
 use App\Entity\Code;
 use App\Entity\Event;
+use App\Enum\CodeStatus;
 use App\Repository\CodeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,7 +31,7 @@ class CodeController extends AbstractController
         #[MapRequestPayload()] CodeDto $codeDto,
         EntityManagerInterface $entityManager,
         NormalizerInterface $normalizer,
-    ): Response {
+    ): JsonResponse {
         $code = new Code();
         $code->setUuid(Uuid::v4()->toString());
         $code->setQuantity($codeDto->quantity);
@@ -43,6 +45,7 @@ class CodeController extends AbstractController
         $code->setExpiresAt($codeDto->expiresAt ?? $event_id->getDate());
         $code->setZoneId($codeDto->zoneId);
         $code->setEvent($event_id);
+        $code->setStatus(CodeStatus::ACTIVE);
         $code->setCreatedAt(new \DateTimeImmutable());
 
         $entityManager->persist($code);
