@@ -3,11 +3,13 @@
 namespace App\Controller;
 
 use App\Dto\CodeDto;
+use App\Dto\PostRedeemDto;
 use App\Entity\Code;
 use App\Entity\Event;
 use App\Enum\CodeStatus;
 use App\Repository\CodeRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -59,5 +61,17 @@ class CodeController extends AbstractController
             $normalizer->normalize($code, format: 'array', context: $context),
             Response::HTTP_CREATED
         );
+    }
+
+    #[Route('/courtesy-codes/{code}/redeem', methods: ['POST'], format: 'json')]
+    public function redeem(
+        #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
+        #[MapRequestPayload()] PostRedeemDto $redeemDto,
+    ): JsonResponse {
+        if ($code->getStatus() <> CodeStatus::ACTIVE)
+            throw new BadRequestException("The code is not available.");
+
+
+        return $this->json(['todo']);
     }
 }

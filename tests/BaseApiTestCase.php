@@ -10,6 +10,7 @@ class BaseApiTestCase extends WebTestCase
     {
         return static::createClient(server: [
             'HTTP_X-API-Key' => 'sk_test_admin_000000',
+            'CONTENT_TYPE' => 'application/json',
         ]);
     }
 }
