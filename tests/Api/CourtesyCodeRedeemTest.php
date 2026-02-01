@@ -4,6 +4,7 @@ namespace App\Tests\Api;
 
 use App\Dto\PostRedeemDto;
 use App\Enum\CodeStatus;
+use App\Enum\UserRoles;
 use App\Factory\CodeFactory;
 use App\Factory\UserFactory;
 use App\Tests\BaseApiTestCase;
@@ -14,9 +15,17 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
 {
     protected string $endpoint = '/courtesy-codes/%s/redeem';
 
-    public function testBodyValidation(): void
+    public function testAccessControl()
     {
         $client = static::createAuthenticatedClient();
+        $courtesyCode = CodeFactory::randomOrCreate();
+        $client->request('POST', sprintf($this->endpoint, $courtesyCode->getUuid()));
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testBodyValidation(): void
+    {
+        $client = static::createAuthenticatedClient(UserRoles::PROMOTER);
         $code = CodeFactory::createOne();
         $client->request('POST', sprintf($this->endpoint, $code->getUuid()), content: '{}');
         $response = json_decode($client->getResponse()->getContent(), true);
@@ -60,7 +69,7 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
 
     public function testFailsWithInvalidCode(): void
     {
-        $client = static::createAuthenticatedClient();
+        $client = static::createAuthenticatedClient(UserRoles::PROMOTER);
         $courtesyCode = CodeFactory::createOne(['status' => CodeStatus::CANCELLED]);
         $redeemDto = new PostRedeemDto();
         $redeemDto->userId = UserFactory::random()->getId();

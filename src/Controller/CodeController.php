@@ -7,6 +7,7 @@ use App\Dto\PostRedeemDto;
 use App\Entity\Code;
 use App\Entity\Event;
 use App\Enum\CodeStatus;
+use App\Enum\UserRoles;
 use App\Repository\CodeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Uid\Uuid;
@@ -63,6 +65,7 @@ class CodeController extends AbstractController
         );
     }
 
+    #[IsGranted(UserRoles::PROMOTER)]
     #[Route('/courtesy-codes/{code}/redeem', methods: ['POST'], format: 'json')]
     public function redeem(
         #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
