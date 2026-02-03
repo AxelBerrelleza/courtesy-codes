@@ -6,6 +6,7 @@ use App\Dto\CodeDto;
 use App\Factory\EventFactory;
 use App\Tests\BaseApiTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Zenstruck\Foundry\Test\Factories;
 
@@ -14,22 +15,18 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
 {
     use Factories;
 
+    protected string $endpoint = '/events/%d/courtesy-codes';
+
+
     public function testHappyPath(): void
     {
         $client = static::createAuthenticatedClient();
-        $endpoint = '/events/%d/courtesy-codes';
         $event = EventFactory::randomOrCreate();
 
-        $codeDto = new CodeDto();
-        $codeDto->quantity = 10;
-        $codeDto->type = 'VIP';
-        $codeDto->zoneId = 'Main Stage';
-        $codeDto->expiresAt = new \DateTimeImmutable('+1 day');
-        $normalizer = $this->getContainer()->get(NormalizerInterface::class);
-        $codeArr = $normalizer->normalize($codeDto, format: 'array');
+        $codeArr = $this->buildValidRequestBody();
         $client->request(
             'POST',
-            \sprintf($endpoint, $event->getId()),
+            \sprintf($this->endpoint, $event->getId()),
             server: ['CONTENT_TYPE' => 'application/json'],
             content: \json_encode($codeArr),
         );
@@ -48,5 +45,52 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
         ];
         foreach ($keysToVerify as $key)
             $this->assertArrayHasKey($key, $response);
+    }
+
+    protected function buildValidRequestBody(): array
+    {
+        $codeDto = new CodeDto();
+        $codeDto->quantity = 10;
+        $codeDto->type = 'VIP';
+        $codeDto->zoneId = 'Main Stage';
+        $codeDto->expiresAt = new \DateTimeImmutable('+1 day');
+        $normalizer = $this->getContainer()->get(NormalizerInterface::class);
+        return $normalizer->normalize($codeDto, format: 'array');
+    }
+
+    public function testInvalidDatesOnExpiresAt()
+    {
+        $client = static::createAuthenticatedClient();
+        $event = EventFactory::randomOrCreate();
+        $codeArr = $this->buildValidRequestBody();
+        // verify that fails with a past date
+        $codeArr['expiresAt'] = (new \DateTimeImmutable('yesterday'))->format('Y-m-d');
+        $client->request(
+            'POST',
+            \sprintf($this->endpoint, $event->getId()),
+            content: \json_encode($codeArr),
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        // dump($response);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertArrayHasKey('violations', $response);
+        $this->assertArrayHasKey('detail', $response);
+        $this->assertStringContainsString(
+            'expiresAt: This value should be greater than',
+            $response['detail']
+        );
+
+        // verify that fails with a date grater than the events date
+        $codeArr['expiresAt'] = $event
+            ->getDate()->add(new \DateInterval('P1D'))->format('Y-m-d');
+        $client->request(
+            'POST',
+            \sprintf($this->endpoint, $event->getId()),
+            content: \json_encode($codeArr),
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $this->assertArrayHasKey('detail', $response);
+        // dump($response['detail']);
     }
 }

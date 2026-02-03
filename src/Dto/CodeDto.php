@@ -14,6 +14,7 @@ class CodeDto
     #[Assert\Length(max: 32)]
     public ?string $type = null;
 
+    #[Assert\GreaterThan(value: new \DateTimeImmutable())]
     public ?\DateTimeImmutable $expiresAt = null;
 
     #[Assert\NotBlank]

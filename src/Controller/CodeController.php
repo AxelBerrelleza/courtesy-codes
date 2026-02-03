@@ -8,8 +8,9 @@ use App\Entity\Code;
 use App\Entity\Event;
 use App\Enum\CodeStatus;
 use App\Enum\UserRoles;
-use App\Repository\CodeRepository;
 use App\Repository\UserRepository;
+use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
+use App\Service\Code\CourtesyCodeCreator;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -23,7 +24,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Uid\Uuid;
 
 class CodeController extends AbstractController
 {
@@ -38,22 +38,13 @@ class CodeController extends AbstractController
         #[MapRequestPayload()] CodeDto $codeDto,
         EntityManagerInterface $entityManager,
         NormalizerInterface $normalizer,
+        CourtesyCodeCreator $courtesyCodeCreator,
     ): JsonResponse {
-        $code = new Code();
-        $code->setUuid(Uuid::v4()->toString());
-        $code->setQuantity($codeDto->quantity);
-        $code->setType($codeDto->type);
-        /** @todo validaciones: fecha mayor a NOW */
-        if ($event_id->getDate() < $codeDto->expiresAt)
-            throw new BadRequestException(
-                "La fecha de expiración debe ser menor a la fecha del evento {$event_id->getDate()->format('Y-m-d')}."
-            );
-
-        $code->setExpiresAt($codeDto->expiresAt ?? $event_id->getDate());
-        $code->setZoneId($codeDto->zoneId);
-        $code->setEvent($event_id);
-        $code->setStatus(CodeStatus::ACTIVE);
-        $code->setCreatedAt(new \DateTimeImmutable());
+        try {
+            $code = $courtesyCodeCreator->create($codeDto, $event_id);
+        } catch (CourtesyCodeInvalidExpirationDateException $ex) {
+            throw new BadRequestException($ex->getMessage());
+        }
 
         $entityManager->persist($code);
         $entityManager->flush();
