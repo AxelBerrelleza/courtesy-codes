@@ -9,6 +9,7 @@ use App\Entity\Event;
 use App\Enum\CodeStatus;
 use App\Enum\UserRoles;
 use App\Repository\CodeRepository;
+use App\Repository\UserRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -17,6 +18,7 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
@@ -71,8 +73,13 @@ class CodeController extends AbstractController
     public function redeem(
         #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
         #[MapRequestPayload()] PostRedeemDto $redeemDto,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
+        $userOwner = $userRepository->findById($redeemDto->userId);
+        if (! $userOwner && ! $redeemDto->guestName)
+            throw new NotFoundHttpException('User not found');
+
         $entityManager->beginTransaction();
         $code = $entityManager->find(
             Code::class,

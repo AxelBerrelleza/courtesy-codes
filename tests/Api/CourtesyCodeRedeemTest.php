@@ -47,6 +47,18 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
         $this->assertArrayHasKey('detail', $response);
         $this->assertStringContainsString('userId', $response['detail']);
 
+        // When request with not existing user
+        $client->request(
+            'POST',
+            sprintf($this->endpoint, $code->getUuid()),
+            content: json_encode(['userId' => 0])
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        // dump($response);
+        $this->assertArrayHasKey('detail', $response);
+        $this->assertStringContainsString('User', $response['detail']);
+
         // When the request contains guest data
         $client->request(
             'POST',
