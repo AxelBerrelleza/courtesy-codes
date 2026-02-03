@@ -3,9 +3,9 @@
 namespace App\Tests\Api;
 
 use App\Dto\CodeDto;
+use App\Enum\UserRoles;
 use App\Factory\EventFactory;
 use App\Tests\BaseApiTestCase;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Zenstruck\Foundry\Test\Factories;
@@ -17,17 +17,23 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
 
     protected string $endpoint = '/events/%d/courtesy-codes';
 
+    public function testAccessControl()
+    {
+        $client = static::createAuthenticatedClient();
+        $event = EventFactory::randomOrCreate();
+        $client->request('POST', \sprintf($this->endpoint, $event->getId()));
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
 
     public function testHappyPath(): void
     {
-        $client = static::createAuthenticatedClient();
+        $client = static::createAuthenticatedClient(UserRoles::ADMIN);
         $event = EventFactory::randomOrCreate();
 
         $codeArr = $this->buildValidRequestBody();
         $client->request(
             'POST',
             \sprintf($this->endpoint, $event->getId()),
-            server: ['CONTENT_TYPE' => 'application/json'],
             content: \json_encode($codeArr),
         );
         $response = json_decode($client->getResponse()->getContent(), true);
@@ -60,7 +66,7 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
 
     public function testInvalidDatesOnExpiresAt()
     {
-        $client = static::createAuthenticatedClient();
+        $client = static::createAuthenticatedClient(UserRoles::ADMIN);
         $event = EventFactory::randomOrCreate();
         $codeArr = $this->buildValidRequestBody();
         // verify that fails with a past date

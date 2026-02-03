@@ -27,6 +27,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class CodeController extends AbstractController
 {
+    #[IsGranted(UserRoles::ADMIN)]
     #[Route(
         '/events/{event_id}/courtesy-codes',
         name: 'code_create',
