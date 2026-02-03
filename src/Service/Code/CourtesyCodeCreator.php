@@ -4,7 +4,9 @@ namespace App\Service\Code;
 
 use App\Dto\CodeDto;
 use App\Entity\Code;
+use App\Entity\CourtesyTicket;
 use App\Entity\Event;
+use App\Entity\Ticket;
 use App\Enum\CodeStatus;
 use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use Symfony\Component\Uid\Uuid;
@@ -25,11 +27,23 @@ class CourtesyCodeCreator
                 "La fecha de expiración debe ser menor a la fecha del evento {$event->getDate()->format('Y-m-d')}."
             );
 
-        $code->setExpiresAt($codeDto->expiresAt ?? $event->getDate());
+        $code->setExpiresAt(
+            $codeDto->expiresAt
+                ?? \DateTimeImmutable::createFromMutable($event->getDate())
+        );
         $code->setZoneId($codeDto->zoneId);
         $code->setEvent($event);
         $code->setStatus(CodeStatus::ACTIVE);
         $code->setCreatedAt(new \DateTimeImmutable());
+        for ($iter = 0; $iter < $code->getQuantity(); $iter++) {
+            $courtesyTicket = new CourtesyTicket();
+            /** @important: this portion emulates a ticket assignment */
+            $ticket = new Ticket();
+            $ticket->setEvent($event);
+
+            $courtesyTicket->setTicket($ticket);
+            $code->addCourtesyTicket($courtesyTicket);
+        }
 
         return $code;
     }

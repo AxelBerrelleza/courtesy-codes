@@ -50,7 +50,11 @@ class Code
     /**
      * @var Collection<int, CourtesyTicket>
      */
-    #[ORM\OneToMany(targetEntity: CourtesyTicket::class, mappedBy: 'code')]
+    #[ORM\OneToMany(
+        targetEntity: CourtesyTicket::class,
+        mappedBy: 'code',
+        cascade: ['persist', 'remove']
+    )]
     private Collection $courtesyTickets;
 
     public function __construct()
