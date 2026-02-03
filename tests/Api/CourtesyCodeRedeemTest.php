@@ -71,10 +71,7 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
     {
         $client = static::createAuthenticatedClient(UserRoles::PROMOTER);
         $courtesyCode = CodeFactory::createOne(['status' => CodeStatus::CANCELLED]);
-        $redeemDto = new PostRedeemDto();
-        $redeemDto->userId = UserFactory::random()->getId();
-        $normalizer = $this->getContainer()->get(NormalizerInterface::class);
-        $redeemData = $normalizer->normalize($redeemDto, format: 'array');
+        $redeemData = $this->buildValidRequestBody();
         $client->request(
             'POST',
             sprintf($this->endpoint, $courtesyCode->getUuid()),
@@ -83,6 +80,39 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
         // dump($response['detail']);
+        $this->arrayHasKey('detail', $response);
+        $this->assertStringContainsString('The code is not available.', $response['detail']);
+    }
+
+    protected function buildValidRequestBody(): array
+    {
+        $redeemDto = new PostRedeemDto();
+        $redeemDto->userId = UserFactory::random()->getId();
+        $normalizer = $this->getContainer()->get(NormalizerInterface::class);
+        return $normalizer->normalize($redeemDto, format: 'array');
+    }
+
+    public function testRedeemHappyPath(): void
+    {
+        $client = static::createAuthenticatedClient(UserRoles::PROMOTER);
+        $courtesyCode = CodeFactory::createOne(['status' => CodeStatus::ACTIVE]);
+        $redeemData = $this->buildValidRequestBody();
+        $client->request(
+            'POST',
+            sprintf($this->endpoint, $courtesyCode->getUuid()),
+            content: json_encode($redeemData),
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertResponseIsSuccessful();
+
+        // verify that code is not available anymore
+        $client->request(
+            'POST',
+            sprintf($this->endpoint, $courtesyCode->getUuid()),
+            content: json_encode($redeemData),
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
         $this->arrayHasKey('detail', $response);
         $this->assertStringContainsString('The code is not available.', $response['detail']);
     }

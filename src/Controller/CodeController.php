@@ -9,6 +9,7 @@ use App\Entity\Event;
 use App\Enum\CodeStatus;
 use App\Enum\UserRoles;
 use App\Repository\CodeRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -70,11 +71,24 @@ class CodeController extends AbstractController
     public function redeem(
         #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
         #[MapRequestPayload()] PostRedeemDto $redeemDto,
+        EntityManagerInterface $entityManager,
     ): JsonResponse {
-        if ($code->getStatus() <> CodeStatus::ACTIVE)
+        $entityManager->beginTransaction();
+        $code = $entityManager->find(
+            Code::class,
+            $code->getId(),
+            LockMode::PESSIMISTIC_WRITE
+        );
+
+        if ($code->getStatus() !== CodeStatus::ACTIVE) {
+            $entityManager->rollback();
             throw new BadRequestException("The code is not available.");
+        }
 
+        $code->setStatus(CodeStatus::ALREADY_REDEEMED);
+        $entityManager->flush();
+        $entityManager->commit();
 
-        return $this->json(['todo']);
+        return $this->json(['ok']);
     }
 }

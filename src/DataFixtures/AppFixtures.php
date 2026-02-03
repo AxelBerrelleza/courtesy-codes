@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Enum\UserRoles;
+use App\Factory\CodeFactory;
 use App\Factory\EventFactory;
 use App\Factory\UserFactory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -24,6 +25,8 @@ class AppFixtures extends Fixture
         UserFactory::createOne([
             'accessToken' => 'sk_test_user_12345'
         ]);
+
+        CodeFactory::createMany(number: 3);
 
         $manager->flush();
     }
