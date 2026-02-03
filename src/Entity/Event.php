@@ -16,10 +16,11 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('code:detail')]
+    #[Groups(['code:detail', 'courtesy_ticket:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('courtesy_ticket:list')]
     private ?string $name = null;
 
     /**

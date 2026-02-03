@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CourtesyTicketRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CourtesyTicketRepository::class)]
 class CourtesyTicket
@@ -19,6 +20,7 @@ class CourtesyTicket
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups('courtesy_ticket:list')]
     private ?Ticket $ticket = null;
 
     public function getId(): ?int

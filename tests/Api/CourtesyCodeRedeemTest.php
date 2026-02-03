@@ -2,10 +2,12 @@
 
 namespace App\Tests\Api;
 
+use App\Dto\CodeDto;
 use App\Dto\PostRedeemDto;
 use App\Enum\CodeStatus;
 use App\Enum\UserRoles;
 use App\Factory\CodeFactory;
+use App\Factory\EventFactory;
 use App\Factory\UserFactory;
 use App\Tests\BaseApiTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -106,21 +108,43 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
 
     public function testRedeemHappyPath(): void
     {
-        $client = static::createAuthenticatedClient(UserRoles::PROMOTER);
-        $courtesyCode = CodeFactory::createOne(['status' => CodeStatus::ACTIVE]);
-        $redeemData = $this->buildValidRequestBody();
+        $client = static::createAuthenticatedClient(UserRoles::ADMIN);
+        $event = EventFactory::randomOrCreate();
+        $codeDto = new CodeDto();
+        $codeDto->quantity = 5;
+        $codeDto->type = 'VIP';
+        $codeDto->zoneId = 'VIP';
+        $codeArr = get_object_vars($codeDto);
         $client->request(
             'POST',
-            sprintf($this->endpoint, $courtesyCode->getUuid()),
+            \sprintf('/events/%d/courtesy-codes', $event->getId()),
+            content: \json_encode($codeArr),
+        );
+        $creationResponse = json_decode($client->getResponse()->getContent(), true);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $redeemData = $this->buildValidRequestBody();
+        self::changeApiKey($client, UserRoles::PROMOTER);
+        $client->request(
+            'POST',
+            sprintf($this->endpoint, $creationResponse['uuid']),
             content: json_encode($redeemData),
         );
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertResponseIsSuccessful();
+        // dump($response);
+        $this->assertIsArray($response);
+        $this->arrayHasKey(0, $response);
+        $this->assertIsArray($response[0]);
+        $this->arrayHasKey('ticket', $response[0]);
+        $this->assertIsArray($response[0]['ticket']);
+        $this->arrayHasKey('uuid', $response[0]['ticket']);
+        $this->arrayHasKey('event', $response[0]['ticket']);
 
         // verify that code is not available anymore
         $client->request(
             'POST',
-            sprintf($this->endpoint, $courtesyCode->getUuid()),
+            sprintf($this->endpoint, $creationResponse['uuid']),
             content: json_encode($redeemData),
         );
         $response = json_decode($client->getResponse()->getContent(), true);

@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use App\Enum\UserRoles;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class BaseApiTestCase extends WebTestCase
@@ -26,5 +27,15 @@ class BaseApiTestCase extends WebTestCase
                 ...$server,
             ]
         );
+    }
+
+    public static function changeApiKey(KernelBrowser $client, string $role = UserRoles::USER)
+    {
+        $client->setServerParameter('HTTP_X-API-Key', match ($role) {
+            UserRoles::ADMIN => self::ADMIN_KEY,
+            UserRoles::PROMOTER => self::PROMOTER_KEY,
+            UserRoles::USER => self::BASE_USER_KEY,
+            default => null
+        });
     }
 }

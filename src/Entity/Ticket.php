@@ -5,9 +5,11 @@ namespace App\Entity;
 use App\Repository\TicketRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
+#[Groups('courtesy_ticket:list')]
 class Ticket
 {
     #[ORM\Id]

@@ -6,11 +6,13 @@ use App\Dto\CodeDto;
 use App\Dto\PostRedeemDto;
 use App\Entity\Code;
 use App\Entity\Event;
+use App\Entity\User;
 use App\Enum\CodeStatus;
 use App\Enum\UserRoles;
 use App\Repository\UserRepository;
 use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use App\Service\Code\CourtesyCodeCreator;
+use App\Service\Code\CourtesyCodeRedeemer;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -22,6 +24,7 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -67,6 +70,8 @@ class CodeController extends AbstractController
         #[MapRequestPayload()] PostRedeemDto $redeemDto,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
+        #[CurrentUser] ?User $currentUser,
+        CourtesyCodeRedeemer $courtesyCodeRedeemer,
         NormalizerInterface $normalizer,
     ): JsonResponse {
         $userOwner = $userRepository->findById($redeemDto->userId);
@@ -82,13 +87,17 @@ class CodeController extends AbstractController
             throw new BadRequestException("The code is not available.");
         }
 
-        $code->setStatus(CodeStatus::ALREADY_REDEEMED);
+        $courtesyCodeRedeemer->redeemAvailableCode($code, $redeemDto, $currentUser);
         $entityManager->flush();
         $entityManager->commit();
 
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('courtesy_ticket:list')
+            ->toArray();
         return $this->json($normalizer->normalize(
             $code->getCourtesyTickets(),
-            format: 'array'
+            format: 'array',
+            context: $context
         ));
     }
 }
