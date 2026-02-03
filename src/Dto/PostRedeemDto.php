@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Enum\GuestType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -21,7 +22,7 @@ class PostRedeemDto
     #[Assert\NotBlank(allowNull: true)]
     public ?string $guestEmail = null;
 
-    #[Assert\Choice(choices: ['press', 'sponsor', 'vip', 'staff', 'other'])]
+    #[Assert\Choice(callback: [GuestType::class, 'values'])]
     public ?string $guestType = null;
 
     /**
