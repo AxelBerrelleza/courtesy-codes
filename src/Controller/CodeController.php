@@ -75,17 +75,15 @@ class CodeController extends AbstractController
         #[MapRequestPayload()] PostRedeemDto $redeemDto,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
+        NormalizerInterface $normalizer,
     ): JsonResponse {
         $userOwner = $userRepository->findById($redeemDto->userId);
         if (! $userOwner && ! $redeemDto->guestName)
             throw new NotFoundHttpException('User not found');
 
         $entityManager->beginTransaction();
-        $code = $entityManager->find(
-            Code::class,
-            $code->getId(),
-            LockMode::PESSIMISTIC_WRITE
-        );
+        $entityManager->lock($code, LockMode::PESSIMISTIC_WRITE);
+        $entityManager->refresh($code);
 
         if ($code->getStatus() !== CodeStatus::ACTIVE) {
             $entityManager->rollback();
@@ -96,6 +94,9 @@ class CodeController extends AbstractController
         $entityManager->flush();
         $entityManager->commit();
 
-        return $this->json(['ok']);
+        return $this->json($normalizer->normalize(
+            $code->getCourtesyTickets(),
+            format: 'array'
+        ));
     }
 }

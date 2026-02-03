@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Enum\CodeStatus;
 use App\Repository\CodeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -41,6 +43,20 @@ class Code
 
     #[ORM\Column(enumType: CodeStatus::class)]
     private ?CodeStatus $status = null;
+
+    #[ORM\OneToOne(mappedBy: 'code', cascade: ['persist', 'remove'])]
+    private ?RedeemedCode $redeemedCode = null;
+
+    /**
+     * @var Collection<int, CourtesyTicket>
+     */
+    #[ORM\OneToMany(targetEntity: CourtesyTicket::class, mappedBy: 'code')]
+    private Collection $courtesyTickets;
+
+    public function __construct()
+    {
+        $this->courtesyTickets = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -139,6 +155,53 @@ class Code
     public function setStatus(CodeStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getRedeemedCode(): ?RedeemedCode
+    {
+        return $this->redeemedCode;
+    }
+
+    public function setRedeemedCode(RedeemedCode $redeemedCode): static
+    {
+        // set the owning side of the relation if necessary
+        if ($redeemedCode->getCode() !== $this) {
+            $redeemedCode->setCode($this);
+        }
+
+        $this->redeemedCode = $redeemedCode;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CourtesyTicket>
+     */
+    public function getCourtesyTickets(): Collection
+    {
+        return $this->courtesyTickets;
+    }
+
+    public function addCourtesyTicket(CourtesyTicket $courtesyTicket): static
+    {
+        if (!$this->courtesyTickets->contains($courtesyTicket)) {
+            $this->courtesyTickets->add($courtesyTicket);
+            $courtesyTicket->setCode($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCourtesyTicket(CourtesyTicket $courtesyTicket): static
+    {
+        if ($this->courtesyTickets->removeElement($courtesyTicket)) {
+            // set the owning side to null (unless already changed)
+            if ($courtesyTicket->getCode() === $this) {
+                $courtesyTicket->setCode(null);
+            }
+        }
 
         return $this;
     }
