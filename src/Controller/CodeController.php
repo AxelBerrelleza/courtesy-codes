@@ -136,4 +136,25 @@ class CodeController extends AbstractController
             context: $context
         ));
     }
+
+    #[Route('/courtesy-codes/{code}', methods: ['DELETE'], format: 'json')]
+    #[IsGranted(new IsAdminOrOwner(isCode: true), subject: 'code')]
+    public function cancel(
+        #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        if ($code->getStatus() === CodeStatus::ALREADY_REDEEMED)
+            throw new BadRequestException('The code is already redeemed.');
+        elseif ($code->getStatus() === CodeStatus::ACTIVE) {
+            $code->setStatus(CodeStatus::CANCELLED);
+            $entityManager->persist($code);
+            $entityManager->flush();
+        }
+
+        return $this->json([
+            'success' => true,
+            'code' => $code->getUuid(),
+            'status' => $code->getStatus(),
+        ]);
+    }
 }

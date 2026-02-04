@@ -41,7 +41,7 @@ class Event
     #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'event')]
     private Collection $tickets;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist', 'remove'])]
     private ?User $promoter = null;
 
     public function __construct()
