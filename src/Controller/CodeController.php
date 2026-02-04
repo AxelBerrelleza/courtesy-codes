@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Enum\CodeStatus;
 use App\Enum\UserRoles;
 use App\Repository\UserRepository;
+use App\Security\Expression\IsAdminOrOwner;
 use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use App\Service\Code\CourtesyCodeCreator;
 use App\Service\Code\CourtesyCodeRedeemer;
@@ -18,7 +19,6 @@ use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -62,9 +62,7 @@ class CodeController extends AbstractController
     }
 
     #[Route('/courtesy-codes/{code}/validate', methods: ['GET'], format: 'json')]
-    #[IsGranted(new Expression(
-        'is_granted("' . UserRoles::ADMIN . '") or (is_granted("' . UserRoles::PROMOTER . '") and subject.getEvent().getPromoter() == user)'
-    ), subject: 'code')]
+    #[IsGranted(new IsAdminOrOwner(isCode: true), subject: 'code')]
     public function validate(
         #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
         NormalizerWithGroups $normalizer,
@@ -125,9 +123,7 @@ class CodeController extends AbstractController
     }
 
     #[Route('/events/{event_id}/courtesy-codes', methods: ['GET'], format: 'json')]
-    #[IsGranted(new Expression(
-        'is_granted("' . UserRoles::ADMIN . '") or (is_granted("' . UserRoles::PROMOTER . '") and subject.getPromoter() == user)'
-    ), subject: 'event_id')]
+    #[IsGranted(new IsAdminOrOwner(isCode: false), subject: 'event_id')]
     public function list(Event $event_id, NormalizerInterface $normalizer): JsonResponse
     {
         /** @todo implement pagination + summary key as in specs */
