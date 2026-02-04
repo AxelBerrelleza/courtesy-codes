@@ -7,6 +7,8 @@ use App\Entity\Code;
 use App\Entity\Event;
 use App\Enum\EventStatus;
 use App\Enum\UserRoles;
+use App\Exception\Cache\EventZoneIdIsBeingProcessByOtherUserException;
+use App\Repository\EventRepository;
 use App\Service\Code\CourtesyCodeCreator;
 use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use App\Service\NormalizerWithGroups;
@@ -18,6 +20,7 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\LockedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -56,10 +59,19 @@ final class CreateCodeAction extends AbstractController
         EntityManagerInterface $entityManager,
         NormalizerWithGroups $normalizer,
         CourtesyCodeCreator $courtesyCodeCreator,
+        EventRepository $eventRepository,
     ): JsonResponse {
         if ($event_id->getStatus() !== EventStatus::ACTIVE)
             throw new BadRequestException('The event is not active.');
 
+        /** @important simulando la revision de inventario con revision
+         * a la key-value db para saber si el recurso ya esta en uso
+         */
+        try {
+            $eventRepository->hasAvailabilityForZone($codeDto->zoneId, $codeDto->quantity);
+        } catch (EventZoneIdIsBeingProcessByOtherUserException $ex) {
+            throw new LockedHttpException($ex->getMessage());
+        }
         try {
             $code = $courtesyCodeCreator->create($codeDto, $event_id);
         } catch (CourtesyCodeInvalidExpirationDateException $ex) {
