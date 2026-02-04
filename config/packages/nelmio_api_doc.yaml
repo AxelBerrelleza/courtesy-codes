@@ -1,9 +1,17 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: My App
-            description: This is an awesome app!
+            title: API de Gestión de Cortesías
+            description: Sistema para validación y canje de códigos de cortesía.
             version: 1.0.0
+        components:
+            securitySchemes:
+                ApiKeyAuth:
+                    type: apiKey
+                    in: header
+                    name: X-API-Key # El nombre exacto del header que espera tu API
+        security:
+            - ApiKeyAuth: [] # Aplica esto globalmente a todos los endpoints
     areas: # to filter documented areas
         path_patterns:
             - ^/(?!/api/doc$|_error) # Accepts routes under / except /api/doc & /_error

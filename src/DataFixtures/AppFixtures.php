@@ -27,6 +27,7 @@ class AppFixtures extends Fixture
         ]);
 
         CodeFactory::createMany(number: 3);
+        /** @todo crear mas usuarios y contemplar mas promotores */
 
         $manager->flush();
     }
