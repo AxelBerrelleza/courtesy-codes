@@ -2,7 +2,7 @@
 
 namespace App\Service\Code;
 
-use App\Dto\CodeDto;
+use App\Dto\CodeCreationDto;
 use App\Entity\Code;
 use App\Entity\CourtesyTicket;
 use App\Entity\Event;
@@ -16,7 +16,7 @@ class CourtesyCodeCreator
     /**
      * @throws CourtesyCodeInvalidExpirationDateException
      */
-    public function create(CodeDto $codeDto, Event $event)
+    public function create(CodeCreationDto $codeDto, Event $event)
     {
         $code = new Code();
         $code->setUuid(Uuid::v4()->toString());

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\CodeDto;
+use App\Dto\CodeCreationDto;
 use App\Entity\Code;
 use App\Entity\Event;
 use App\Enum\UserRoles;
@@ -51,7 +51,7 @@ final class CreateCodeAction extends AbstractController
     )]
     public function __invoke(
         Event $event_id,
-        #[MapRequestPayload] CodeDto $codeDto,
+        #[MapRequestPayload] CodeCreationDto $codeDto,
         EntityManagerInterface $entityManager,
         NormalizerWithGroups $normalizer,
         CourtesyCodeCreator $courtesyCodeCreator,

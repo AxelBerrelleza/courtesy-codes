@@ -4,7 +4,7 @@ namespace App\Dto;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class CodeDto
+class CodeCreationDto
 {
     #[Assert\NotBlank]
     #[Assert\Positive]

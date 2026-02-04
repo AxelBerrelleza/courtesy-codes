@@ -2,7 +2,7 @@
 
 namespace App\Tests\Api;
 
-use App\Dto\CodeDto;
+use App\Dto\CodeCreationDto;
 use App\Entity\Event;
 use App\Enum\UserRoles;
 use App\Factory\EventFactory;
@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Zenstruck\Foundry\Test\Factories;
 
-/** @todo handle other scenarios */
 class CourtesyCodeCreationTest extends BaseApiTestCase
 {
     use Factories;
@@ -59,7 +58,7 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
 
     protected function buildValidRequestBody(): array
     {
-        $codeDto = new CodeDto();
+        $codeDto = new CodeCreationDto();
         $codeDto->quantity = 10;
         $codeDto->type = 'VIP';
         $codeDto->zoneId = 'Main Stage';
@@ -111,7 +110,7 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
         if (!$event)
             $event = EventFactory::randomOrCreate();
 
-        $codeDto = new CodeDto();
+        $codeDto = new CodeCreationDto();
         $codeDto->quantity = 10;
         $codeDto->type = 'VIP';
         $codeDto->zoneId = 'Main Stage';

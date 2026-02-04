@@ -2,7 +2,7 @@
 
 namespace App\Tests;
 
-use App\Dto\CodeDto;
+use App\Dto\CodeCreationDto;
 use App\Factory\EventFactory;
 use App\Service\Code\CourtesyCodeCreator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,7 +14,7 @@ class CourtesyCodeCreatorTest extends KernelTestCase
     {
         $courtesyCodeCreator = $this->getContainer()->get(CourtesyCodeCreator::class);
         $event = EventFactory::random();
-        $codeDto = new CodeDto();
+        $codeDto = new CodeCreationDto();
         $codeDto->quantity = $quantity = 10;
         $codeDto->type = 'VIP';
         $codeDto->zoneId = 'Main Stage';
