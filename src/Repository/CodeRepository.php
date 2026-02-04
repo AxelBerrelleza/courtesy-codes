@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Code;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,19 @@ class CodeRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Code::class);
+    }
+
+    /**
+     * @return Code[]
+     */
+    public function findByRedeemedUser(User $user): array
+    {
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.redeemedCode', 'rc')
+            ->andWhere('rc.redeemedBy = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**

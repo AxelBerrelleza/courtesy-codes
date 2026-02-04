@@ -4,12 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Code;
 use App\Entity\Event;
+use App\Entity\User;
+use App\Enum\UserRoles;
+use App\Repository\CodeRepository;
 use App\Security\Expression\IsAdminOrOwner;
+use App\Service\NormalizerWithGroups;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -36,16 +41,20 @@ final class ListCodesAction extends AbstractController
         response: 404,
         description: 'Event not found'
     )]
-    public function __invoke(Event $event_id, NormalizerInterface $normalizer): JsonResponse
-    {
+    public function __invoke(
+        Event $event_id,
+        NormalizerWithGroups $normalizer,
+        CodeRepository $codeRepository,
+        #[CurrentUser()] User $currentUser,
+    ): JsonResponse {
         /** @todo implement pagination + summary key as in specs */
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('code:detail')
-            ->toArray();
+        $data =
+            $this->isGranted(UserRoles::ADMIN) ?
+            $event_id->getCodes() :
+            $codeRepository->findByRedeemedUser($currentUser);
         return $this->json($normalizer->normalize(
-            $event_id->getCodes(),
-            format: 'array',
-            context: $context
+            $data,
+            groups: ['code:detail']
         ));
     }
 }
