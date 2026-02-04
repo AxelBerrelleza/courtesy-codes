@@ -9,9 +9,10 @@ use App\Entity\User;
 use App\Enum\CodeStatus;
 use App\Enum\EventStatus;
 use App\Enum\UserRoles;
+use App\Message\SendTicketByEmailMessage;
 use App\Repository\UserRepository;
-use App\Security\Expression\IsAdminOrOwner;
 use App\Service\Code\CourtesyCodeRedeemer;
+use App\Service\NormalizerWithGroups;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -23,11 +24,10 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 #[OA\Tag(name: 'Courtesy Codes')]
 final class RedeemCodeAction extends AbstractController
@@ -71,9 +71,10 @@ final class RedeemCodeAction extends AbstractController
         EntityManagerInterface $entityManager,
         #[CurrentUser] ?User $currentUser,
         CourtesyCodeRedeemer $courtesyCodeRedeemer,
-        NormalizerInterface $normalizer,
+        NormalizerWithGroups $normalizer,
+        MessageBusInterface $messageBus,
     ): JsonResponse {
-        $userOwner = $userRepository->findById($redeemDto->userId);
+        $userOwner = $userRepository->find($redeemDto->userId);
         if (! $userOwner && ! $redeemDto->guestName)
             throw new NotFoundHttpException('User not found');
         if ($code->getEvent()->getStatus() !== EventStatus::ACTIVE)
@@ -91,14 +92,14 @@ final class RedeemCodeAction extends AbstractController
         $courtesyCodeRedeemer->redeemAvailableCode($code, $redeemDto, $currentUser);
         $entityManager->flush();
         $entityManager->commit();
+        /** @important para simular colas */
+        $messageBus->dispatch(new SendTicketByEmailMessage(
+            $userOwner ? $userOwner->getEmail() : $redeemDto->guestEmail
+        ));
 
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('courtesy_ticket:list')
-            ->toArray();
         return $this->json($normalizer->normalize(
             $code->getCourtesyTickets(),
-            format: 'array',
-            context: $context
+            groups: 'courtesy_ticket:list'
         ));
     }
 }
