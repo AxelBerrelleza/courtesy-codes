@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\CodeDto;
 use App\Dto\PostRedeemDto;
+use App\Entity\CourtesyTicket;
 use App\Entity\Code;
 use App\Entity\Event;
 use App\Entity\User;
@@ -29,7 +30,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use OpenApi\Attributes as OA;
+use Nelmio\ApiDocBundle\Attribute\Model;
 
+#[OA\Tag(name: 'Courtesy Codes')]
 class CodeController extends AbstractController
 {
     #[IsGranted(UserRoles::ADMIN)]
@@ -38,6 +42,25 @@ class CodeController extends AbstractController
         name: 'code_create',
         methods: ['POST'],
         format: 'json'
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Returns the created code',
+        content: new OA\JsonContent(
+            ref: new Model(type: Code::class, groups: ['code:detail'])
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Invalid input, e.g., expiration date is after the event date'
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Forbidden, only admins can create codes'
+    )]
+    #[OA\Response(
+        response: 422,
+        description: 'Validation error on the request body'
     )]
     public function create(
         Event $event_id,
@@ -62,7 +85,29 @@ class CodeController extends AbstractController
     }
 
     #[Route('/courtesy-codes/{code}/validate', methods: ['GET'], format: 'json')]
+    #[OA\Parameter(name: 'code', in: 'path', description: 'The UUID of the code to validate')]
     #[IsGranted(new IsAdminOrOwner(isCode: true), subject: 'code')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns the code details if valid and active, or a reason if not.',
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(ref: new Model(type: Code::class, groups: ['code:detail'])),
+                new OA\Schema(properties: [
+                    new OA\Property(property: 'valid', type: 'boolean', example: false),
+                    new OA\Property(property: 'reason', type: 'string', example: 'code_expired.'),
+                ], type: 'object')
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Forbidden, user is not the owner or an admin'
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'Code not found'
+    )]
     public function validate(
         #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
         NormalizerWithGroups $normalizer,
@@ -71,7 +116,7 @@ class CodeController extends AbstractController
             return $this->json(
                 $normalizer->normalize($code, groups: 'code:detail')
             );
-        elseif ($code->getExpiresAt() < new \DateTimeImmutable())
+        elseif ($code->hasExpired())
             return $this->json([
                 'valid' => false,
                 'reason' => 'code_expired.',
@@ -85,7 +130,32 @@ class CodeController extends AbstractController
     }
 
     #[IsGranted(UserRoles::PROMOTER)]
+    #[OA\Parameter(name: 'code', in: 'path', description: 'The UUID of the code to redeem')]
     #[Route('/courtesy-codes/{code}/redeem', methods: ['POST'], format: 'json')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns the generated courtesy tickets upon successful redemption',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: CourtesyTicket::class, groups: ['courtesy_ticket:list']))
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Bad request, e.g., code is not available for redemption'
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Forbidden, only promoters can redeem'
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'Code or User not found'
+    )]
+    #[OA\Response(
+        response: 422,
+        description: 'Validation error on the request body'
+    )]
     public function redeem(
         #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
         #[MapRequestPayload()] PostRedeemDto $redeemDto,
@@ -123,7 +193,24 @@ class CodeController extends AbstractController
     }
 
     #[Route('/events/{event_id}/courtesy-codes', methods: ['GET'], format: 'json')]
+    #[OA\Parameter(name: 'event_id', in: 'path', description: 'The ID of the event')]
     #[IsGranted(new IsAdminOrOwner(isCode: false), subject: 'event_id')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns the list of codes for an event',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Code::class, groups: ['code:detail']))
+        )
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Forbidden, user is not the event owner or an admin'
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'Event not found'
+    )]
     public function list(Event $event_id, NormalizerInterface $normalizer): JsonResponse
     {
         /** @todo implement pagination + summary key as in specs */
@@ -138,7 +225,32 @@ class CodeController extends AbstractController
     }
 
     #[Route('/courtesy-codes/{code}', methods: ['DELETE'], format: 'json')]
+    #[OA\Parameter(name: 'code', in: 'path', description: 'The UUID of the code to cancel')]
     #[IsGranted(new IsAdminOrOwner(isCode: true), subject: 'code')]
+    #[OA\Response(
+        response: 200,
+        description: 'Returns a success message with the code status',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'code', type: 'string', format: 'uuid'),
+                new OA\Property(property: 'status', type: 'string', example: 'cancelled'),
+            ],
+            type: 'object'
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Bad request, e.g., code has already been redeemed'
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Forbidden, user is not the owner or an admin'
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'Code not found'
+    )]
     public function cancel(
         #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
         EntityManagerInterface $entityManager
