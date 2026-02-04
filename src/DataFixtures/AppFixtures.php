@@ -21,8 +21,6 @@ class AppFixtures extends Fixture
         UserFactory::createOne([
             'accessToken' => 'sk_test_user_12345'
         ]);
-        UserFactory::createMany(number: 100);
-
         $mainPromoter = UserFactory::createOne([
             'roles' => [UserRoles::PROMOTER],
             'accessToken' => 'sk_test_promoter_abc123'
@@ -31,6 +29,7 @@ class AppFixtures extends Fixture
             'promoter' => $mainPromoter
         ]);
 
+        UserFactory::createMany(number: 100);
         CodeFactory::createMany(number: 3);
 
         $manager->flush();

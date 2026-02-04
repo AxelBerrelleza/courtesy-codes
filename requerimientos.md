@@ -2,6 +2,8 @@
 - [x] La API debe autenticar mediante api-key con un header "X-API-KEY"
 
 ### Consideraciones:
+  - Una diferencia con los requerimientos es que en esta API se canjean un codigo que
+  que puede tener varios boletos
   - Se debe usar acceso basado en roles que puede variar para cada endpoint
   - El rol de usuario básico no realiza acciones en este flujo, pero puede ser asignado 
   al canjear un código.
@@ -22,7 +24,7 @@
   - [x] canjear código POST /courtesy-codes/{code}/redeem
   - [x] invalidar código DELETE /courtesy-codes/{code}
   - EXTRAS, para una fácil revision:
-  - [ ] listar usuarios (listado simple id, email) GET /users
+  - [x] listar usuarios (listado simple id, email) GET /users
   - [ ] listar eventos GET /events
 
 ### Decisiones técnicas a resaltar
