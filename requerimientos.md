@@ -1,10 +1,10 @@
-### Desarrollar una API para control de codigos de cortesia.
+### Desarrollar una API para control de códigos de cortesía.
 - [x] La API debe autenticar mediante api-key con un header "X-API-KEY"
 
 ### Consideraciones:
-  - Se debe usear acceso basado en roles que puede variar para cada endpoint
-  - El rol de usuario basico no realiza acciones en este flujo, pero puede ser asignado 
-  al canjear un codigo.  
+  - Se debe usar acceso basado en roles que puede variar para cada endpoint
+  - El rol de usuario básico no realiza acciones en este flujo, pero puede ser asignado 
+  al canjear un código.  
 
 | Endpoint                            | Acción         | Admin | Promoter | User | Nota                                              |
 | ----------------------------------- | -------------- | ----- | -------- | ---- | ------------------------------------------------- |
@@ -15,12 +15,12 @@
 | DELETE /courtesy-codes/{code}       | Invalidar      | ✅     | ⚠️        | ❌    | El Promotor podría anular si un invitado cancela. |
 
 ### Endpoints a generar:
-  - [x] crear codigos POST /events/{event_id}/courtesy-codes
-  - [x] listar codigos GET /events/{event_id}/courtesy-codes
-  - [x] validar codigo GET /courtesy-codes/{code}/validate
-  - [x] canjear codigo POST /courtesy-codes/{code}/redeem
-  - [x] invalidar codigo DELETE /courtesy-codes/{code}
+  - [x] crear códigos POST /events/{event_id}/courtesy-codes
+  - [x] listar códigos GET /events/{event_id}/courtesy-codes
+  - [x] validar código GET /courtesy-codes/{code}/validate
+  - [x] canjear código POST /courtesy-codes/{code}/redeem
+  - [x] invalidar código DELETE /courtesy-codes/{code}
 
-### Desiciones tecnias a resaltar
+### Decisiones técnicas a resaltar
 Para está API opte por aplicar pessimistic locking, el cual hace un bloqueo de fila en la base de datos
-liberando el registro hasta que la transaccion se complete o reciba un rollback
+liberando el registro hasta que la transacción se complete o reciba un rollback
