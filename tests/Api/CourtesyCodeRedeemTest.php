@@ -109,18 +109,7 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
     public function testRedeemHappyPath(): void
     {
         $client = static::createAuthenticatedClient(UserRoles::ADMIN);
-        $event = EventFactory::randomOrCreate();
-        $codeDto = new CodeDto();
-        $codeDto->quantity = 5;
-        $codeDto->type = 'VIP';
-        $codeDto->zoneId = 'VIP';
-        $codeArr = get_object_vars($codeDto);
-        $client->request(
-            'POST',
-            \sprintf('/events/%d/courtesy-codes', $event->getId()),
-            content: \json_encode($codeArr),
-        );
-        $creationResponse = json_decode($client->getResponse()->getContent(), true);
+        $creationResponse = CourtesyCodeCreationTest::createCode($client);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $redeemData = $this->buildValidRequestBody();
