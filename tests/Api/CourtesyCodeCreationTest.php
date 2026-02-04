@@ -6,6 +6,7 @@ use App\Dto\CodeDto;
 use App\Enum\UserRoles;
 use App\Factory\EventFactory;
 use App\Tests\BaseApiTestCase;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Zenstruck\Foundry\Test\Factories;
@@ -101,5 +102,26 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
         $this->assertArrayHasKey('detail', $response);
         // dump($response['detail']);
+    }
+
+    public static function createCode(KernelBrowser $client)
+    {
+        self::changeApiKey($client, UserRoles::ADMIN);
+        $event = EventFactory::randomOrCreate();
+
+        $codeDto = new CodeDto();
+        $codeDto->quantity = 10;
+        $codeDto->type = 'VIP';
+        $codeDto->zoneId = 'Main Stage';
+        $codeArr = get_object_vars($codeDto);
+        $client->request(
+            'POST',
+            \sprintf('/events/%d/courtesy-codes', $event->getId()),
+            content: \json_encode($codeArr),
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        return $response;
     }
 }

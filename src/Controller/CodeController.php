@@ -17,6 +17,7 @@ use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -96,6 +97,22 @@ class CodeController extends AbstractController
             ->toArray();
         return $this->json($normalizer->normalize(
             $code->getCourtesyTickets(),
+            format: 'array',
+            context: $context
+        ));
+    }
+
+    #[Route('/events/{event_id}/courtesy-codes', methods: ['GET'], format: 'json')]
+    #[IsGranted(new Expression(
+        'is_granted("' . UserRoles::ADMIN . '") or (is_granted("' . UserRoles::PROMOTER . '") and subject.getPromoter() == user)'
+    ), subject: 'event_id')]
+    public function list(Event $event_id, NormalizerInterface $normalizer): JsonResponse
+    {
+        $context = (new ObjectNormalizerContextBuilder())
+            ->withGroups('code:detail')
+            ->toArray();
+        return $this->json($normalizer->normalize(
+            $event_id->getCodes(),
             format: 'array',
             context: $context
         ));
