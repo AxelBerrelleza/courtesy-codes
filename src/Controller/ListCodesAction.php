@@ -16,8 +16,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 #[OA\Tag(name: 'Courtesy Codes')]
 final class ListCodesAction extends AbstractController
@@ -54,7 +52,7 @@ final class ListCodesAction extends AbstractController
             $codeRepository->findByRedeemedUser($currentUser);
         return $this->json($normalizer->normalize(
             $data,
-            groups: ['code:detail']
+            groups: ['code:detail', 'user:summary']
         ));
     }
 }

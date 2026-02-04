@@ -84,5 +84,11 @@ class CourtesyCodeListTest extends BaseApiTestCase
         $this->assertIsArray($response[0]);
         $this->assertArrayHasKey('uuid', $response[0]);
         $this->assertArrayHasKey('event', $response[0]);
+        $this->assertArrayHasKey('redeemedCode', $response[0]);
+
+        $this->assertIsArray($response[0]['redeemedCode']);
+        $this->assertArrayHasKey('id', $response[0]['redeemedCode']);
+        $this->assertArrayHasKey('redeemedAt', $response[0]['redeemedCode']);
+        $this->assertArrayHasKey('redeemedBy', $response[0]['redeemedCode']);
     }
 }

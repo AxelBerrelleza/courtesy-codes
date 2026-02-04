@@ -33,6 +33,11 @@
 Para está API opte por aplicar pessimistic locking, el cual hace un bloqueo de fila en la base de datos
 liberando el registro hasta que la transacción se complete o reciba un rollback
 
+Desarrolle la API enfocándome en los modelos Code, CourtesyTicket y RedeemedCode 
+debido a que son el núcleo para el servicio de códigos de cortesía, 
+mientras que los otros modelos (Ticket, Event, User) pertenecerían 
+a otros micro-servicios.
+
 ### Posibles race conditions
 - Al canjear el código si dos usuarios tratan de canjear el mismo simultáneamente
 - Al invalidar un código si un usuario trata de canjear mientras otro trata de invalidarlo simultáneamente

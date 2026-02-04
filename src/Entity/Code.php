@@ -53,6 +53,7 @@ class Code
     private ?CodeStatus $status = null;
 
     #[ORM\OneToOne(mappedBy: 'code', cascade: ['persist', 'remove'])]
+    #[Groups('code:detail')]
     private ?RedeemedCode $redeemedCode = null;
 
     /**
