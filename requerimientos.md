@@ -41,3 +41,8 @@ a otros micro-servicios.
 ### Posibles race conditions
 - Al canjear el código si dos usuarios tratan de canjear el mismo simultáneamente
 - Al invalidar un código si un usuario trata de canjear mientras otro trata de invalidarlo simultáneamente
+
+### Posibles mejoras
+- Implementar paginación en los listados
+- idempotencia a los endpoint POST
+- Mejorar el locking para sistemas distribuidos con Redis
