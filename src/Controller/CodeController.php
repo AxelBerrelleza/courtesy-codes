@@ -191,36 +191,4 @@ class CodeController extends AbstractController
             context: $context
         ));
     }
-
-    #[Route('/events/{event_id}/courtesy-codes', methods: ['GET'], format: 'json')]
-    #[OA\Parameter(name: 'event_id', in: 'path', description: 'The ID of the event')]
-    #[IsGranted(new IsAdminOrOwner(isCode: false), subject: 'event_id')]
-    #[OA\Response(
-        response: 200,
-        description: 'Returns the list of codes for an event',
-        content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(ref: new Model(type: Code::class, groups: ['code:detail']))
-        )
-    )]
-    #[OA\Response(
-        response: 403,
-        description: 'Forbidden, user is not the event owner or an admin'
-    )]
-    #[OA\Response(
-        response: 404,
-        description: 'Event not found'
-    )]
-    public function list(Event $event_id, NormalizerInterface $normalizer): JsonResponse
-    {
-        /** @todo implement pagination + summary key as in specs */
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('code:detail')
-            ->toArray();
-        return $this->json($normalizer->normalize(
-            $event_id->getCodes(),
-            format: 'array',
-            context: $context
-        ));
-    }
 }
