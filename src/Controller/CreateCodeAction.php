@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Dto\CodeCreationDto;
 use App\Entity\Code;
 use App\Entity\Event;
+use App\Enum\EventStatus;
 use App\Enum\UserRoles;
 use App\Service\Code\CourtesyCodeCreator;
 use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
@@ -56,6 +57,9 @@ final class CreateCodeAction extends AbstractController
         NormalizerWithGroups $normalizer,
         CourtesyCodeCreator $courtesyCodeCreator,
     ): JsonResponse {
+        if ($event_id->getStatus() !== EventStatus::ACTIVE)
+            throw new BadRequestException('The event is not active.');
+
         try {
             $code = $courtesyCodeCreator->create($codeDto, $event_id);
         } catch (CourtesyCodeInvalidExpirationDateException $ex) {

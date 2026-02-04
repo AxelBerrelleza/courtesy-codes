@@ -7,6 +7,7 @@ use App\Entity\Code;
 use App\Entity\CourtesyTicket;
 use App\Entity\User;
 use App\Enum\CodeStatus;
+use App\Enum\EventStatus;
 use App\Enum\UserRoles;
 use App\Repository\UserRepository;
 use App\Service\Code\CourtesyCodeRedeemer;
@@ -68,6 +69,8 @@ final class RedeemCodeAction extends AbstractController
         $userOwner = $userRepository->findById($redeemDto->userId);
         if (! $userOwner && ! $redeemDto->guestName)
             throw new NotFoundHttpException('User not found');
+        if ($code->getEvent()->getStatus() !== EventStatus::ACTIVE)
+            throw new BadRequestException('The event is not active.');
 
         $entityManager->beginTransaction();
         $entityManager->lock($code, LockMode::PESSIMISTIC_WRITE);
