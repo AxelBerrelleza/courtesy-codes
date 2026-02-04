@@ -39,6 +39,8 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
         $response = json_decode($client->getResponse()->getContent(), true);
         // dump($response);
         $this->assertResponseIsSuccessful();
+        $this->assertArrayNotHasKey('redeemedCode', $response);
+        $this->assertArrayNotHasKey('courtesyTickets', $response);
         $keysToVerify = [
             'id',
             'uuid',

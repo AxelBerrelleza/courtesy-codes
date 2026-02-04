@@ -11,37 +11,45 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CodeRepository::class)]
-#[Groups('code:detail')]
 class Code
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('code:detail')]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::GUID)]
+    #[Groups('code:detail')]
     private ?string $uuid = null;
 
     #[ORM\Column]
+    #[Groups('code:detail')]
     private ?int $quantity = null;
 
     #[ORM\Column(length: 32)]
+    #[Groups('code:detail')]
     private ?string $type = null;
 
     #[ORM\Column]
+    #[Groups('code:detail')]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups('code:detail')]
     private ?\DateTimeImmutable $expiresAt = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('code:detail')]
     private ?string $zoneId = null;
 
     #[ORM\ManyToOne(inversedBy: 'codes')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups('code:detail')]
     private ?Event $event = null;
 
     #[ORM\Column(enumType: CodeStatus::class)]
+    #[Groups('code:detail')]
     private ?CodeStatus $status = null;
 
     #[ORM\OneToOne(mappedBy: 'code', cascade: ['persist', 'remove'])]
