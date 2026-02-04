@@ -5,14 +5,11 @@ namespace App\Controller;
 use App\Dto\CodeDto;
 use App\Entity\Code;
 use App\Entity\Event;
-use App\Enum\CodeStatus;
 use App\Enum\UserRoles;
-use App\Security\Expression\IsAdminOrOwner;
 use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use App\Service\Code\CourtesyCodeCreator;
 use App\Service\NormalizerWithGroups;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -72,50 +69,5 @@ class CodeController extends AbstractController
             $normalizer->normalize($code, groups: 'code:detail'),
             Response::HTTP_CREATED
         );
-    }
-
-    #[Route('/courtesy-codes/{code}/validate', methods: ['GET'], format: 'json')]
-    #[OA\Parameter(name: 'code', in: 'path', description: 'The UUID of the code to validate')]
-    #[IsGranted(new IsAdminOrOwner(isCode: true), subject: 'code')]
-    #[OA\Response(
-        response: 200,
-        description: 'Returns the code details if valid and active, or a reason if not.',
-        content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(ref: new Model(type: Code::class, groups: ['code:detail'])),
-                new OA\Schema(properties: [
-                    new OA\Property(property: 'valid', type: 'boolean', example: false),
-                    new OA\Property(property: 'reason', type: 'string', example: 'code_expired.'),
-                ], type: 'object')
-            ]
-        )
-    )]
-    #[OA\Response(
-        response: 403,
-        description: 'Forbidden, user is not the owner or an admin'
-    )]
-    #[OA\Response(
-        response: 404,
-        description: 'Code not found'
-    )]
-    public function validate(
-        #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
-        NormalizerWithGroups $normalizer,
-    ): JsonResponse {
-        if ($code->getStatus() === CodeStatus::ACTIVE)
-            return $this->json(
-                $normalizer->normalize($code, groups: 'code:detail')
-            );
-        elseif ($code->hasExpired())
-            return $this->json([
-                'valid' => false,
-                'reason' => 'code_expired.',
-            ]);
-        else {
-            return $this->json([
-                'valid' => false,
-                'reason' => $code->getStatus(),
-            ]);
-        }
     }
 }
