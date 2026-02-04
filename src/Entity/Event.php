@@ -41,6 +41,9 @@ class Event
     #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'event')]
     private Collection $tickets;
 
+    #[ORM\ManyToOne]
+    private ?User $promoter = null;
+
     public function __construct()
     {
         $this->codes = new ArrayCollection();
@@ -144,6 +147,18 @@ class Event
                 $ticket->setEvent(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPromoter(): ?User
+    {
+        return $this->promoter;
+    }
+
+    public function setPromoter(?User $promoter): static
+    {
+        $this->promoter = $promoter;
 
         return $this;
     }
