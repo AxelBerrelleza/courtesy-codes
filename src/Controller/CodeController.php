@@ -13,6 +13,7 @@ use App\Repository\UserRepository;
 use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use App\Service\Code\CourtesyCodeCreator;
 use App\Service\Code\CourtesyCodeRedeemer;
+use App\Service\NormalizerWithGroups;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -42,7 +43,7 @@ class CodeController extends AbstractController
         Event $event_id,
         #[MapRequestPayload()] CodeDto $codeDto,
         EntityManagerInterface $entityManager,
-        NormalizerInterface $normalizer,
+        NormalizerWithGroups $normalizer,
         CourtesyCodeCreator $courtesyCodeCreator,
     ): JsonResponse {
         try {
@@ -54,14 +55,35 @@ class CodeController extends AbstractController
         $entityManager->persist($code);
         $entityManager->flush();
 
-        $context = (new ObjectNormalizerContextBuilder())
-            ->withGroups('code:detail')
-            ->toArray();
-
         return $this->json(
-            $normalizer->normalize($code, format: 'array', context: $context),
+            $normalizer->normalize($code, groups: 'code:detail'),
             Response::HTTP_CREATED
         );
+    }
+
+    #[Route('/courtesy-codes/{code}/validate', methods: ['GET'], format: 'json')]
+    #[IsGranted(new Expression(
+        'is_granted("' . UserRoles::ADMIN . '") or (is_granted("' . UserRoles::PROMOTER . '") and subject.getEvent().getPromoter() == user)'
+    ), subject: 'code')]
+    public function validate(
+        #[MapEntity(mapping: ['code' => 'uuid'])] Code $code,
+        NormalizerWithGroups $normalizer,
+    ): JsonResponse {
+        if ($code->getStatus() === CodeStatus::ACTIVE)
+            return $this->json(
+                $normalizer->normalize($code, groups: 'code:detail')
+            );
+        elseif ($code->getExpiresAt() < new \DateTimeImmutable())
+            return $this->json([
+                'valid' => false,
+                'reason' => 'code_expired.',
+            ]);
+        else {
+            return $this->json([
+                'valid' => false,
+                'reason' => $code->getStatus(),
+            ]);
+        }
     }
 
     #[IsGranted(UserRoles::PROMOTER)]
@@ -108,6 +130,7 @@ class CodeController extends AbstractController
     ), subject: 'event_id')]
     public function list(Event $event_id, NormalizerInterface $normalizer): JsonResponse
     {
+        /** @todo implement pagination + summary key as in specs */
         $context = (new ObjectNormalizerContextBuilder())
             ->withGroups('code:detail')
             ->toArray();

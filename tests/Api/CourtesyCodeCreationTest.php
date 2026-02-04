@@ -3,6 +3,7 @@
 namespace App\Tests\Api;
 
 use App\Dto\CodeDto;
+use App\Entity\Event;
 use App\Enum\UserRoles;
 use App\Factory\EventFactory;
 use App\Tests\BaseApiTestCase;
@@ -104,10 +105,11 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
         // dump($response['detail']);
     }
 
-    public static function createCode(KernelBrowser $client)
+    public static function createCode(KernelBrowser $client, ?Event $event = null)
     {
         self::changeApiKey($client, UserRoles::ADMIN);
-        $event = EventFactory::randomOrCreate();
+        if (!$event)
+            $event = EventFactory::randomOrCreate();
 
         $codeDto = new CodeDto();
         $codeDto->quantity = 10;
