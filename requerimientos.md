@@ -9,13 +9,15 @@
   al canjear un código.
   - El listado de códigos debe mostrar cuando y por quien fueron usados, si es el caso
 
-| Endpoint                            | Acción         | Admin | Promoter | User | Nota                                              |
-| ----------------------------------- | -------------- | ----- | -------- | ---- | ------------------------------------------------- |
-| POST /events/{id}/courtesy-codes    | Crear códigos  | ✅     | ❌        | ❌    | El Admin centraliza la creación.                  |
-| GET /events/{id}/courtesy-codes     | Listar códigos | ✅     | ⚠️        | ❌    | El Promotor solo ve los **que el canjeo**.        |
-| GET /courtesy-codes/{code}/validate | Validar código | ✅     | ⚠️        | ❌    | El Promotor necesita validar antes de canjear.    |
-| POST /courtesy-codes/{code}/redeem  | Canjear código | ❌     | ⚠️        | ❌    | El Promotor solo canjea los de **su evento**.     |
-| DELETE /courtesy-codes/{code}       | Invalidar      | ✅     | ⚠️        | ❌    | El Promotor podría anular si un invitado cancela. |
+| Endpoint                            | Acción          | Admin | Promoter | User | Nota                                              |
+| ----------------------------------- | --------------- | ----- | -------- | ---- | ------------------------------------------------- |
+| POST /events/{id}/courtesy-codes    | Crear códigos   | ✅     | ❌        | ❌    | El Admin centraliza la creación.                  |
+| GET /events/{id}/courtesy-codes     | Listar códigos  | ✅     | ⚠️        | ❌    | El Promotor solo ve los **que el canjeo**.        |
+| GET /courtesy-codes/{code}/validate | Validar código  | ✅     | ⚠️        | ❌    | El Promotor necesita validar antes de canjear.    |
+| POST /courtesy-codes/{code}/redeem  | Canjear código  | ❌     | ⚠️        | ❌    | El Promotor solo canjea los de **su evento**.     |
+| DELETE /courtesy-codes/{code}       | Invalidar       | ✅     | ⚠️        | ❌    | El Promotor podría anular si un invitado cancela. |
+| GET /users                          | Listar Usuarios | ✅     | ✅        | ❌    |                                                   |
+| GET /events                         | Listar eventos  | ✅     | ✅        | ❌    |                                                   |
 
 ### Endpoints a generar:
   - [x] crear códigos POST /events/{event_id}/courtesy-codes
