@@ -10,6 +10,7 @@ use App\Enum\CodeStatus;
 use App\Enum\EventStatus;
 use App\Enum\UserRoles;
 use App\Repository\UserRepository;
+use App\Security\Expression\IsAdminOrOwner;
 use App\Service\Code\CourtesyCodeRedeemer;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,7 @@ use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -30,7 +32,12 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 #[OA\Tag(name: 'Courtesy Codes')]
 final class RedeemCodeAction extends AbstractController
 {
-    #[IsGranted(UserRoles::PROMOTER)]
+    #[IsGranted(
+        new Expression(
+            'is_granted("' . UserRoles::PROMOTER . '") and subject.getEvent().getPromoter() == user'
+        ),
+        subject: 'code'
+    )]
     #[OA\Parameter(name: 'code', in: 'path', description: 'The UUID of the code to redeem')]
     #[Route('/courtesy-codes/{code}/redeem', methods: ['POST'], format: 'json')]
     #[OA\Response(

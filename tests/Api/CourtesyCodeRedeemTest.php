@@ -28,7 +28,7 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
     public function testBodyValidation(): void
     {
         $client = static::createAuthenticatedClient(UserRoles::PROMOTER);
-        $code = CodeFactory::createOne();
+        $code = $this->createCode();
         $client->request('POST', sprintf($this->endpoint, $code->getUuid()), content: '{}');
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -81,10 +81,21 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
         $this->assertStringContainsString('guestType', $response['detail']);
     }
 
+    protected function createCode(array $attributes = [])
+    {
+        $event = EventFactory::createOne([
+            'promoter' => UserFactory::findBy(['accessToken' => self::PROMOTER_KEY])[0]
+        ]);
+        return CodeFactory::createOne([
+            'event' => $event,
+            ...$attributes
+        ]);
+    }
+
     public function testFailsWithInvalidCode(): void
     {
         $client = static::createAuthenticatedClient(UserRoles::PROMOTER);
-        $courtesyCode = CodeFactory::createOne(['status' => CodeStatus::CANCELLED]);
+        $courtesyCode = $this->createCode(['status' => CodeStatus::CANCELLED]);
         $redeemData = $this->buildValidRequestBody();
         $client->request(
             'POST',
@@ -108,8 +119,11 @@ class CourtesyCodeRedeemTest extends BaseApiTestCase
 
     public function testRedeemHappyPath(): void
     {
-        $client = static::createAuthenticatedClient(UserRoles::ADMIN);
-        $creationResponse = CourtesyCodeCreationTest::createCode($client);
+        $client = static::createAuthenticatedClient();
+        $event = EventFactory::createOne([
+            'promoter' => UserFactory::findBy(['accessToken' => self::PROMOTER_KEY])[0]
+        ]);
+        $creationResponse = CourtesyCodeCreationTest::createCode($client, $event);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $redeemData = $this->buildValidRequestBody();
