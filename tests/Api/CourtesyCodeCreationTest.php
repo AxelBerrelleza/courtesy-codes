@@ -59,7 +59,8 @@ class CourtesyCodeCreationTest extends BaseApiTestCase
         $codeDto->quantity = 10;
         $codeDto->type = 'VIP';
         $codeDto->zoneId = 'Main Stage';
-        $codeDto->expiresAt = new \DateTimeImmutable('+1 day');
+        // preferable use the default assigned on testing
+        // $codeDto->expiresAt = new \DateTimeImmutable('+1 day');
         $normalizer = $this->getContainer()->get(NormalizerInterface::class);
         return $normalizer->normalize($codeDto, format: 'array');
     }

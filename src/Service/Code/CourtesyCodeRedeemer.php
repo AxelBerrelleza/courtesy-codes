@@ -26,7 +26,9 @@ class CourtesyCodeRedeemer
         $redeemedCode->setUserOwner($userOwner);
         $redeemedCode->setGuestName($redeemDto->guestName);
         $redeemedCode->setGuestEmail($redeemDto->guestEmail);
-        $redeemedCode->setGuestType(GuestType::tryFrom($redeemDto->guestType));
+        $redeemedCode->setGuestType(GuestType::tryFrom(
+            $redeemDto->guestType ?? '' // to avoid a deprecation msg
+        ));
 
         $code->setRedeemedCode($redeemedCode);
     }
