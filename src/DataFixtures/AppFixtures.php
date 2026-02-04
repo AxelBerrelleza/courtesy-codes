@@ -16,14 +16,16 @@ class AppFixtures extends Fixture
         EventFactory::createMany(number: 3);
         UserFactory::createOne([
             'roles' => [UserRoles::ADMIN],
-            'accessToken' => 'sk_test_admin_000000'
+            'accessToken' => 'sk_test_admin_000000',
+            'email' => 'admin@email.com'
         ]);
         UserFactory::createOne([
             'accessToken' => 'sk_test_user_12345'
         ]);
         $mainPromoter = UserFactory::createOne([
             'roles' => [UserRoles::PROMOTER],
-            'accessToken' => 'sk_test_promoter_abc123'
+            'accessToken' => 'sk_test_promoter_abc123',
+            'email' => 'main-promoter@email.com'
         ]);
         EventFactory::createOne([
             'promoter' => $mainPromoter

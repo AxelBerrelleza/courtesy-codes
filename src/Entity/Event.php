@@ -16,11 +16,15 @@ class Event
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['code:detail', 'courtesy_ticket:list'])]
+    #[Groups([
+        'code:detail',
+        'courtesy_ticket:list',
+        'event:summary'
+    ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('courtesy_ticket:list')]
+    #[Groups(['courtesy_ticket:list', 'event:summary'])]
     private ?string $name = null;
 
     /**
@@ -30,9 +34,11 @@ class Event
     private Collection $codes;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['event:summary'])]
     private ?\DateTime $date = null;
 
     #[ORM\Column(enumType: EventStatus::class)]
+    #[Groups(['event:summary'])]
     private ?EventStatus $status = null;
 
     /**
@@ -42,6 +48,7 @@ class Event
     private Collection $tickets;
 
     #[ORM\ManyToOne(cascade: ['persist', 'remove'])]
+    #[Groups(['event:summary'])]
     private ?User $promoter = null;
 
     public function __construct()

@@ -2,7 +2,7 @@
 - [x] La API debe autenticar mediante api-key con un header "X-API-KEY"
 
 ### Consideraciones:
-  - Una diferencia con los requerimientos es que en esta API se canjean un codigo que
+  - Una diferencia con los requerimientos es que en esta API se canjean un código que
   que puede tener varios boletos
   - Se debe usar acceso basado en roles que puede variar para cada endpoint
   - El rol de usuario básico no realiza acciones en este flujo, pero puede ser asignado 
@@ -27,7 +27,7 @@
   - [x] invalidar código DELETE /courtesy-codes/{code}
   - EXTRAS, para una fácil revision:
   - [x] listar usuarios (listado simple id, email) GET /users
-  - [ ] listar eventos GET /events
+  - [x] listar eventos GET /events
 
 ### Decisiones técnicas a resaltar
 Para está API opte por aplicar pessimistic locking, el cual hace un bloqueo de fila en la base de datos
