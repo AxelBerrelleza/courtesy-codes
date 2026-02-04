@@ -6,10 +6,12 @@ use App\Dto\CodeDto;
 use App\Entity\Code;
 use App\Entity\Event;
 use App\Enum\UserRoles;
-use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use App\Service\Code\CourtesyCodeCreator;
+use App\Service\Code\CourtesyCodeInvalidExpirationDateException;
 use App\Service\NormalizerWithGroups;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,11 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use OpenApi\Attributes as OA;
-use Nelmio\ApiDocBundle\Attribute\Model;
 
 #[OA\Tag(name: 'Courtesy Codes')]
-class CodeController extends AbstractController
+final class CreateCodeAction extends AbstractController
 {
     #[IsGranted(UserRoles::ADMIN)]
     #[Route(
@@ -49,9 +49,9 @@ class CodeController extends AbstractController
         response: 422,
         description: 'Validation error on the request body'
     )]
-    public function create(
+    public function __invoke(
         Event $event_id,
-        #[MapRequestPayload()] CodeDto $codeDto,
+        #[MapRequestPayload] CodeDto $codeDto,
         EntityManagerInterface $entityManager,
         NormalizerWithGroups $normalizer,
         CourtesyCodeCreator $courtesyCodeCreator,
