@@ -31,7 +31,7 @@ final class EventFactory extends PersistentObjectFactory
     {
         return [
             'name' => self::faker()->country(),
-            'date' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('now', '+7 days')),
+            'date' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('tomorrow', '+7 days')),
             'status' => EventStatus::ACTIVE,
         ];
     }

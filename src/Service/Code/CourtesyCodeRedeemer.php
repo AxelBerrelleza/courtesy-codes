@@ -17,7 +17,9 @@ class CourtesyCodeRedeemer
         User $redeemedBy,
         ?User $userOwner = null,
     ) {
-        /** @todo verify code expiration */
+        if ($code->hasExpired($code))
+            throw new CourtesyCodeExpiredException();
+
         $code->setStatus(CodeStatus::ALREADY_REDEEMED);
         $redeemedCode = new RedeemedCode();
         $redeemedCode->setCode($code);

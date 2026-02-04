@@ -35,7 +35,7 @@ final class CodeFactory extends PersistentObjectFactory
             'type' => self::faker()->text(32),
             'zoneId' => self::faker()->text(255),
             'status' => CodeStatus::ACTIVE,
-            'expiresAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+            'expiresAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('tomorrow', '+7 days')),
             'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
         ];
     }

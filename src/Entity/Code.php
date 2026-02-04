@@ -217,4 +217,9 @@ class Code
 
         return $this;
     }
+
+    public function hasExpired()
+    {
+        return $this->getExpiresAt() < new \DateTimeImmutable();
+    }
 }
