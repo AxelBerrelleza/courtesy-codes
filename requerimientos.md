@@ -16,7 +16,11 @@
 
 ### Endpoints a generar:
   - [x] crear codigos POST /events/{event_id}/courtesy-codes
-  - [ ] listar codigos GET /events/{event_id}/courtesy-codes
-  - [ ] validar codigo GET /courtesy-codes/{code}/validate
-  - [ ] canjear codigo POST /courtesy-codes/{code}/redeem
-  - [ ] invalidar codigo DELETE /courtesy-codes/{code}
+  - [x] listar codigos GET /events/{event_id}/courtesy-codes
+  - [x] validar codigo GET /courtesy-codes/{code}/validate
+  - [x] canjear codigo POST /courtesy-codes/{code}/redeem
+  - [x] invalidar codigo DELETE /courtesy-codes/{code}
+
+### Desiciones tecnias a resaltar
+Para está API opte por aplicar pessimistic locking, el cual hace un bloqueo de fila en la base de datos
+liberando el registro hasta que la transaccion se complete o reciba un rollback
