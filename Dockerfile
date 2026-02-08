@@ -73,6 +73,7 @@ CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile", "--watch" ]
 FROM frankenphp_base AS frankenphp_prod
 
 ENV APP_ENV=prod
+ENV CADDY_GLOBAL_OPTIONS="auto_https disable_certs"
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
@@ -81,7 +82,9 @@ COPY --link frankenphp/conf.d/20-app.prod.ini $PHP_INI_DIR/app.conf.d/
 # prevent the reinstallation of vendors at every changes in the source code
 COPY --link composer.* symfony.* ./
 RUN set -eux; \
-	composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
+	composer install \
+	--no-cache \
+	--prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
 
 # copy sources
 COPY --link --exclude=frankenphp/ . ./
