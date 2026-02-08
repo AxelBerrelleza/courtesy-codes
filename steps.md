@@ -15,3 +15,11 @@
 	- zenstruck-foundry
 	- orm-fixtures
 	- dama/doctrine-test-bundle
+
+### To deploy on App platform
+```bash
+# build an image and set it a tag to upload on one container registry
+docker build . -t frakenphp_prod
+# to verify build on local, run command. Ensure required envs are set (DB, SERVER_NAME)
+docker run -d -p "80:80" -p "443:443" -p "443:443/udp" frakenphp_prod
+```

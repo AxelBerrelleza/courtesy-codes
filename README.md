@@ -19,18 +19,18 @@ docker compose exec php bin/phpunit --testdox
 ```
 
 ### Las partes mas importantes del proyecto se encuentran en las siguientes carpetas
-config/
-migrations/
-tests/
-src/
-├── Controller
-├── DataFixtures
-├── Dto
-├── Entity
-├── Enum
-├── Repository
-├── Security
-└── Service
+- config/
+- migrations/
+- tests/
+- src/
+- ├── Controller
+- ├── DataFixtures
+- ├── Dto
+- ├── Entity
+- ├── Enum
+- ├── Repository
+- ├── Security
+- └── Service
 
 ### Lecturas relevantes
 - requerimientos.md: donde fui escribiendo el analisis sobre los requerimientos
